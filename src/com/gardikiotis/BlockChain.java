@@ -12,28 +12,13 @@ class BlockChain implements Serializable {
         this.hbs = hbs;
     }
 
-    public void createBlock(String data) {
-        long start=new Date().getTime();
 
-        if (blockchain.isEmpty()) {
-            Block b = new Block(1, "0", data);
+    public HashBlockString getHbs() {
+        return hbs;
+    }
 
-            b.setBlockHex(hbs.HashBlock(b));
-            b.setGenerationTime((float)(new Date().getTime()-start)/1000);
-            blockchain.add(b);
-            //    System.out.println("Block " + b.getId() + " created");
-            //     System.out.println("Block " + b.getId() + " hash: " + b.getBlockHex());
-        } else {
-            Block b = new Block(blockchain.get(blockchain.size() - 1).getId() + 1, blockchain.get(blockchain.size() - 1).getBlockHex(), data);
-            b.setBlockHex(hbs.HashBlock(b));
-            b.setGenerationTime((float)(new Date().getTime()-start)/1000);
-
-            blockchain.add(b);
-            //  System.out.println("Block " + b.getId() + " created");
-            //  System.out.println("Block " + b.getId() + " hash: " + b.getBlockHex());
-        }
-
-
+    public void setHbs(HashBlockString hbs) {
+        this.hbs = hbs;
     }
 
     public Boolean isValid() {
@@ -45,7 +30,7 @@ class BlockChain implements Serializable {
         return true;
     }
 
-    public ArrayList<Block> getBlockchain() {
+    public  ArrayList<Block> getBlockchain() {
         return blockchain;
     }
 
