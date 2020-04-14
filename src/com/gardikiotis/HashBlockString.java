@@ -24,5 +24,22 @@ class HashBlockString implements Serializable {
 
         }
         return hash;
+
+    }
+
+    public int getNumOfZeros() {
+        return numOfZeros;
+    }
+
+    public void setNumOfZeros(int numOfZeros) {
+        this.numOfZeros = numOfZeros;
+    }
+
+    public void increaseDifficulty(){
+        this.numOfZeros++;
+    }
+
+    public void decreaseDifficulty(){
+        this.numOfZeros--;
     }
 }

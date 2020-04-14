@@ -4,12 +4,12 @@ import java.util.Date;
 
 public class Miner extends Thread {
     private volatile BlockChain blockChain;
-    private static boolean isEmptyBlockchain;
+
     private String data;
     public Miner(BlockChain b,String data) {
         this.blockChain = b;
         this.data = data;
-        this.isEmptyBlockchain = b.getBlockchain().isEmpty();
+
      }
 
     public void mineBlock(String data) {
@@ -17,33 +17,36 @@ public class Miner extends Thread {
         int id;
         String previousBlockHash;
         synchronized (Miner.class){
-        if (isEmptyBlockchain) {
+        if (blockChain.getBlockchain().isEmpty()) {
             id = 1;
             previousBlockHash = "0";
-            isEmptyBlockchain = false;
-            Block b = new Block(id, previousBlockHash , data);
-            b.setBlockHex(blockChain.getHbs().HashBlock(b));
-            b.setGenerationTime((float) (new Date().getTime() - start) / 1000);
-            blockChain.getBlockchain().add(b);
-            System.out.println("Block data:" + b.getData() );
         } else {
             id = blockChain.getBlockchain().get(blockChain.getBlockchain().size() - 1).getId() + 1;
             previousBlockHash = blockChain.getBlockchain().get(blockChain.getBlockchain().size() - 1).getBlockHex();
-            Block b = new Block(id, previousBlockHash , data);
-            b.setBlockHex(blockChain.getHbs().HashBlock(b));
-            b.setGenerationTime((float) (new Date().getTime() - start) / 1000);
-            blockChain.getBlockchain().add(b);
-            System.out.println("Block data:" + b.getData() );
-        }}
-
-        //    System.out.println("Block " + b.getId() + " created");
+        }
+            generateBlock(data, start, id, previousBlockHash);
+        }
     }
+
+    private void generateBlock(String data, long start, int id, String previousBlockHash) {
+
+        Block b = new Block(id, previousBlockHash, data);
+        b.setBlockHex(blockChain.getHbs().HashBlock(b));
+        b.setGenerationTime((float) (new Date().getTime() - start) / 1000);
+        if (blockChain.isValidBlock(b)) {
+            b.setCreatedBy(Thread.currentThread().getName().substring(14));
+            blockChain.addBlock(b);
+         //   System.out.println("Block data:" + b.getData());
+        }
+    }
+
     synchronized boolean getBlockChainState(){
         return blockChain.getBlockchain().isEmpty();
     }
 
     @Override
     public void run() {
-        mineBlock(this.data);
+  //      for (int i=0 ; i<=2 ; i++){
+        mineBlock(this.data);//+" "+i);}
     }
 }

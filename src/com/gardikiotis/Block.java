@@ -14,6 +14,11 @@ class Block implements Serializable {
     private String blockdata;
     private float generationTime;
 
+
+    private String createdBy;
+
+    private int requiredZeros;
+
     public Block(Integer id, String previousBlockHexString, String data) {
         initMagicNumber();
         this.id = id;
@@ -32,6 +37,15 @@ class Block implements Serializable {
 
     public void updateMagicNumberBlockData() {
         this.blockdata = this.magicNumber + this.id + this.previousBlockHexString + this.data;
+    }
+
+
+    public int getRequiredZeros() {
+        return requiredZeros;
+    }
+
+    public void setRequiredZeros(int requiredZeros) {
+        this.requiredZeros = requiredZeros;
     }
 
     public int getId() {
@@ -89,6 +103,16 @@ class Block implements Serializable {
     public void setData(String data) {
         this.data = data;
     }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy ="Created by miner # "+createdBy;
+    }
+
+
 
     public float getGenerationTime() {
         return this.generationTime;
