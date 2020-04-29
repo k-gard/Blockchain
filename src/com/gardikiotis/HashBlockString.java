@@ -17,6 +17,7 @@ class HashBlockString implements Serializable {
             i--;
         }
         String hash = StringUtil.applySha256(b.getBlockdata());
+      //  System.out.println("Prefix:"+prefix+" hash:"+hash);
         while (!hash.startsWith(prefix.toString())) {
             b.initMagicNumber();
             b.updateMagicNumberBlockData();

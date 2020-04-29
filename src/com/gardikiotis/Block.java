@@ -1,7 +1,9 @@
 package com.gardikiotis;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 class Block implements Serializable {
@@ -13,6 +15,7 @@ class Block implements Serializable {
     private String data;
     private String blockdata;
     private float generationTime;
+    private List<Transaction> transactions = new ArrayList<>();
 
 
     private String createdBy;
@@ -27,6 +30,17 @@ class Block implements Serializable {
         this.data = data;
         this.blockdata = this.magicNumber + id.toString() + previousBlockHexString + data;
     }
+
+    public Block(Integer id, String previousBlockHexString) {
+        initMagicNumber();
+        this.id = id;
+        this.timestamp = new Date().getTime();
+        this.previousBlockHexString = previousBlockHexString;
+        this.data="";
+        this.blockdata = this.magicNumber + id.toString() + previousBlockHexString + data;
+    }
+
+
 
     public void initMagicNumber() {
         this.magicNumber = new Random().nextLong();
@@ -100,8 +114,23 @@ class Block implements Serializable {
         return data;
     }
 
-    public void setData(String data) {
-        this.data = data;
+    public void setData(List<Transaction> t) {
+     //   System.out.println("Transaction List Size" + t.size());
+        setTransactions(t);
+        StringBuilder s = new StringBuilder();
+        if (t.size() == 1) {this.data = t.get(0).getTransactionLine();
+        return ;}
+        for (int i = 0 ; i < t.size() - 1 ; i++){
+   //         System.out.println("List size"+t.size());
+   //         System.out.println("i:" +i);
+            s.append(t.get(i).getTransactionLine()).append("\n");
+        }
+        s.append(t.get(t.size() - 1).getTransactionLine());
+        this.data = s.toString();
+    }
+
+    public void setData(String s) {
+        this.data = s;
     }
 
     public String getCreatedBy() {
@@ -109,7 +138,7 @@ class Block implements Serializable {
     }
 
     public void setCreatedBy(String createdBy) {
-        this.createdBy ="Created by miner # "+createdBy;
+        this.createdBy ="miner # "+createdBy;
     }
 
 
@@ -120,5 +149,13 @@ class Block implements Serializable {
 
     public void setGenerationTime(float generationTime) {
         this.generationTime = generationTime;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
     }
 }
