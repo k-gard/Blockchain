@@ -55,17 +55,18 @@ public class Miner extends Thread {
 
         } else {
           //  System.out.println("pending Transactions"+blockChain.getPendingTransactions().size());
-            b.setData(blockChain.getPendingTransactions());
+            b.setTransactions(blockChain.getPendingTransactions());
+            b.setData(b.getTransactions());
         }
         if (!b.getData().isEmpty() && !b.getData().equals("no Transactions")){
 
         b.setBlockHex(blockChain.getHbs().HashBlock(b));
         b.setGenerationTime((float) (new Date().getTime() - start) / 1000);
-       // addBlockToBlockChain(b)
+
         ;}
-      //  mineBlock();
+
         addBlockToBlockChain(b);
-    //    System.out.println("pending Transactions"+blockChain.getPendingTransactions().size());
+
 
     }
 
@@ -74,7 +75,9 @@ public class Miner extends Thread {
 
             b.setCreatedBy(Thread.currentThread().getName().substring(14));
             blockChain.addBlock(b);
+
             if (BlockChain.getInstance().getBalance(b.getCreatedBy()) > 0){
+
             sendVC();}
             MessageSender.generateMessages();
 
@@ -114,10 +117,11 @@ public class Miner extends Thread {
         while (amount > 0){
             int i  = new Random().nextInt(50);
             amount = i > amount ? 0 : amount - i;
-            newTransactions.add(MessageSender.generateMessage("miner #"+Thread.currentThread().getName().substring(14),i));
+            newTransactions.add(MessageSender.generateMessage("miner # "+Thread.currentThread().getName().substring(14),i));
         }
 
         for (Transaction t : newTransactions ) {
+
             blockChain.addPendingTransaction(t);
         }
     }

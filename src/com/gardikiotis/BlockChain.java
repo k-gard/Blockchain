@@ -1,11 +1,17 @@
 package com.gardikiotis;
 
+import javax.crypto.NoSuchPaddingException;
+import java.io.File;
 import java.io.Serializable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 class BlockChain implements Serializable {
     private static BlockChain single_instance = null;
@@ -13,40 +19,61 @@ class BlockChain implements Serializable {
     private ArrayList<String> blockchainDifficulty = new ArrayList<>();
     private volatile LinkedList<Transaction> incomingTransactions = new LinkedList<>();
     private HashBlockString hbs;
-    private long messageId = 120L;
+    private long TransactionId = 1L;
     private PrivateKey privateKey;
     private PublicKey publicKey;
-    //private AsymmetricCryptography ac = new AsymmetricCryptography();;
+    private int awardAmount;
+    private int MaximumBlockChainCoins = 300000000;
+
+
 
     private BlockChain() throws Exception {
-        AsymmetricCryptography ac = new AsymmetricCryptography();
-        ;
-        GenerateKeys.generateKeyPair("C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\");
 
-        this.privateKey = ac.getPrivate("C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\privateKey");
-        this.publicKey = ac.getPublic("C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\publicKey");
+        this.awardAmount = 100; //Default award amount
+
+
+            InitializeKeys();
+
 
         this.hbs = new HashBlockString(0);
 
     }
 
+    private void InitializeKeys() throws NoSuchPaddingException, NoSuchAlgorithmException {
+        AsymmetricCryptography ac = new AsymmetricCryptography();
+        try{
+            System.out.println("Enter path for BlockChain encryption keys");
+            Scanner scanner = new Scanner(System.in);
+        Path path = Paths.get(scanner.nextLine());
+            File file=new File(path.toString());
+            if (!file.exists()) {
+                file.mkdir();
+                file.setWritable(true);
+                file.setReadable(true);
+                //    System.out.println(path.toString());
+                GenerateKeys.generateKeyPair(path.toString()/*"C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\"*/);
+                this.privateKey = ac.getPrivate(path.toString()+"\\privateKey");//"C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\privateKey");
+                this.publicKey = ac.getPublic(path.toString()+"\\publicKey");//"C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\publicKey");
+
+            }
+            else {
+                System.out.println("Path already exists");
+                InitializeKeys();
+            }
+        }catch (Exception e){
+            System.out.println("Path error");
+            InitializeKeys();
+        }
+    }
+
     public static BlockChain getInstance() throws Exception {
         if (single_instance == null)
             single_instance = new BlockChain();
-
         return single_instance;
     }
 
     public static void acceptMessages(boolean b) throws Exception {
         MessageSender.generateMessages();
-    /*if (b){
-        Thread messageSender =new MessageSender();
-        messageSender.start();
-        System.out.println("started");
-    }
-    else{
-       System.out.println("canceled");
-        MessageSender.cancel();}*/
     }
 
 
@@ -58,9 +85,13 @@ class BlockChain implements Serializable {
         this.hbs = hbs;
     }
 
+    //BlockChain Validation
     public Boolean isValid() {
         for (int i = 0; i < blockchain.size() - 1; i++) {
             if (!blockchain.get(i + 1).getPreviousBlockHexString().equals(blockchain.get(i).getBlockHex())) {
+                return false;
+            }
+            if (blockchain.get(i + 1).getId() != blockchain.get(i).getId() + 1) {
                 return false;
             }
         }
@@ -107,7 +138,7 @@ class BlockChain implements Serializable {
 
     public void addBlock(Block b) throws Exception {
         setDifficulty(b);
-        awardMiner(100, b);
+        awardMiner(awardAmount, b);
         blockchain.add(b);
     }
 
@@ -131,10 +162,9 @@ class BlockChain implements Serializable {
     public void addPendingTransaction(Transaction incomingTransaction) {
 
         if (isValidTransaction(incomingTransaction)) {
-            this.messageId++;
+            this.TransactionId++;
             this.incomingTransactions.push(incomingTransaction);
-            //  System.out.println("_Added_");
-            //        System.out.println(incomingTransaction.getMessageLine());
+
         }
 
     }
@@ -142,9 +172,7 @@ class BlockChain implements Serializable {
     public synchronized List<Transaction> getPendingTransactions() {
         List<Transaction> transactionList = new ArrayList<>();
         synchronized (Miner.class) {
-           /* if (incomingTransactions.size() < 2) {
-                return transactionList;
-            }*/
+
 
             while (incomingTransactions.size() > 0) {
                 transactionList.add(this.incomingTransactions.remove());
@@ -154,8 +182,8 @@ class BlockChain implements Serializable {
         }
     }
 
-    public long getMessageId() {
-        return messageId;
+    public long getTransactionId() {
+        return TransactionId;
     }
 
 
@@ -165,95 +193,67 @@ class BlockChain implements Serializable {
         try {
             AsymmetricCryptography ac = new AsymmetricCryptography();
             String s = ac.decryptText(m.getSignature(), m.getPublicKey());
-            if (m.getId() > messageId + 1) {
-                //  System.out.println("Id issue");
+            if (m.getId() > TransactionId + 1) {
+                System.out.println("Id issue");
+                return false;
+            }
+            if (getBalance(m.getSender()) < m.getVcAmount() ||
+                    m.getVcAmount() == 0) {
                 return false;
             }
 
-            if (!m.getSender().equals("BlockChain") && m.getSender().contains("miner")) {
-                if (getBalance(m.getSender()) < m.getVcAmount() &&
-                        m.getVcAmount() > 0) { return false;}
-           /*     int totalAmount = 0;
-            for (Block b : BlockChain.getInstance().getBlockchain()) {
-                    for (Transaction t : b.getTransactions()) {
-                        System.out.println("TransactionID:"+t.getId());
-                        if (t.getRecipient().equals(m.getSender())) {
-                            totalAmount += t.getVcAmount();
-                            System.out.println("RES"+t.getRecipient());
-                            System.out.println("SEN"+m.getSender());
-                            System.out.println("+ recipient=sender total/trans " + totalAmount+"/"+t.getVcAmount());
-                        }
-                        if (t.getSender().equals(m.getSender())) {
-                            System.out.println("RES"+t.getRecipient());
-                            System.out.println("SEN"+m.getSender());
-                            System.out.println("- sender=sender total/trans " + totalAmount+"/"+t.getVcAmount());
-                            totalAmount -= t.getVcAmount();
-                        }
-                        System.out.println("-------------------------------------------------------------------" );
-                    }
-                if (totalAmount < m.getVcAmount() || m.getVcAmount() == 0){
-                    System.out.println("insufficient funds - total/transaction " + totalAmount +" /" + m.getVcAmount()
-                            + " sender/recipient "+ m.getSender()+"/"+m.getRecipient());
-                    return false;}
-                }*/
-
-
-            }
-
-            if (!s.equals("{" + m.getId() + "}" + m.getContent())) {
-                System.out.println("Signature: " + ac.decryptText(m.getSignature(), m.getPublicKey()));
-                System.out.println("Content: " + "{" + m.getId() + "}" + m.getContent());
-                System.out.println("Signature issue");
-                return false;
-
-            }
-
-            //   System.out.println("funds OK - total/transaction " + totalAmount +" /" + m.getVcAmount()
-            //           + " sender/recipient "+ m.getSender()+"/"+m.getRecipient());
-            return true;
+            return s.equals("{" + m.getId() + "}" + m.getContent());
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Signature issue");
-
             return false;
         }
     }
 
     private void awardMiner(int amount, Block block) throws Exception {
-        long id = this.messageId + 1;
-        String sender = "BlockChain";
-        String recipient = block.getCreatedBy();
-        String text = "{" + id + "}" + sender + recipient + amount;
-        addPendingTransaction(new Transaction(id, sender, recipient, AsymmetricCryptography.generateSignature(text, privateKey), publicKey, amount));
-      //  System.out.println("Miner Awarded");
-      //  System.out.println("Balance" +getBalance(recipient));
+        if (this.MaximumBlockChainCoins > 100) {
+            long id = this.TransactionId + 1;
+            String sender = "BlockChain";
+            String recipient = block.getCreatedBy();
+            String text = "{" + id + "}" + sender + recipient + amount;
+            addPendingTransaction(new Transaction(id, sender, recipient, AsymmetricCryptography.generateSignature(text, this.privateKey), this.publicKey, amount));
+            this.MaximumBlockChainCoins -= 100;
+            return;
+        }
+        System.out.println("BlockChain coin limit reached");
     }
 
     public int getBalance(String s) throws Exception {
-        int totalAmount = 0;
-        if (!s.equals("BlockChain")) {
 
-            for (Block b : BlockChain.getInstance().getBlockchain()) {
-                for (Transaction t : b.getTransactions()) {
-                  //  System.out.println("TransactionID:" + t.getId());
-                    if (t.getRecipient().equals(s)) {
-                        totalAmount += t.getVcAmount();
-                   //     System.out.println("RES" + t.getRecipient());
-                   //     System.out.println("SEN" + s);
-                   //     System.out.println("+ recipient=sender total/trans " + totalAmount + "/" + t.getVcAmount());
-                    }
-                    if (t.getSender().equals(s)) {
-                   //     System.out.println("RES" + t.getRecipient());
-                   //     System.out.println("SEN" + s);
-                   //     System.out.println("- sender=sender total/trans " + totalAmount + "/" + t.getVcAmount());
-                        totalAmount -= t.getVcAmount();
-                    }
-                 //   System.out.println("-------------------------------------------------------------------");
+        int totalAmount = 0;
+        if (s.equals("BlockChain")) {
+            return this.MaximumBlockChainCoins;
+        }
+
+        for (Block b : BlockChain.getInstance().getBlockchain()) {
+            for (Transaction t : b.getTransactions()) {
+
+                if (t.getRecipient().equals(s)) {
+                    totalAmount += t.getVcAmount();
+
+                }
+                if (t.getSender().equals(s)) {
+
+                    totalAmount -= t.getVcAmount();
                 }
 
             }
+
         }
+
         return totalAmount;
+    }
+
+    public int getAwardAmount() {
+        return awardAmount;
+    }
+
+    public void setAwardAmount(int awardAmount) {
+        this.awardAmount = awardAmount;
     }
 }
 

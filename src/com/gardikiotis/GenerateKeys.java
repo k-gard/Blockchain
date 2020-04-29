@@ -49,11 +49,12 @@ public class GenerateKeys {
 
     public static void generateKeyPair(String path) {
         GenerateKeys gk;
+
         try {
             gk = new GenerateKeys(1024);
             gk.createKeys();
-            gk.writeToFile(/*"C:\\Users\\x0r\\Desktop\\*/path + "publicKey", gk.getPublicKey().getEncoded());
-            gk.writeToFile(/*"C:\\Users\\x0r\\Desktop\\*/path + "privateKey", gk.getPrivateKey().getEncoded());
+            gk.writeToFile(/*"C:\\Users\\x0r\\Desktop\\*/path + "\\publicKey", gk.getPublicKey().getEncoded());
+            gk.writeToFile(/*"C:\\Users\\x0r\\Desktop\\*/path + "\\privateKey", gk.getPrivateKey().getEncoded());
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             System.err.println(e.getMessage());
         } catch (IOException e) {

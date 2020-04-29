@@ -114,15 +114,13 @@ class Block implements Serializable {
         return data;
     }
 
+
     public void setData(List<Transaction> t) {
-     //   System.out.println("Transaction List Size" + t.size());
-        setTransactions(t);
+
         StringBuilder s = new StringBuilder();
         if (t.size() == 1) {this.data = t.get(0).getTransactionLine();
         return ;}
         for (int i = 0 ; i < t.size() - 1 ; i++){
-   //         System.out.println("List size"+t.size());
-   //         System.out.println("i:" +i);
             s.append(t.get(i).getTransactionLine()).append("\n");
         }
         s.append(t.get(t.size() - 1).getTransactionLine());
