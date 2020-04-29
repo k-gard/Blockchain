@@ -23,35 +23,29 @@ public  class MessageSender extends Thread {
    public static Transaction generateMessage() throws Exception {
        if (!KeysInitializedFlag){
            InitializeKeys();}
-       // AsymmetricCryptography ac = new AsymmetricCryptography();
-  //      PrivateKey privateKey = ac.getPrivate("C:\\Users\\x0r\\Desktop\\Keys\\privateKey");
-   //     publicKey = ac.getPublic("C:\\Users\\x0r\\Desktop\\Keys\\publicKey");
-    //    String[] strings = generateRandomWords(15);
+
         String sender = senders[new Random().nextInt(10)];
         String recipient = recipients[new Random().nextInt(10)];
         int amount = new Random().nextInt(10);
-    //    String content = strings[1] + " " + strings[2] + " " + strings[3] + " " + strings[4] + " " + strings[5] + " " + strings[6];
+
         long id=BlockChain.getInstance().getTransactionId() + 1L;
-        String text="{" + id/*(BlockChain.getInstance().getMessageId() + 1L)*/ +"}" + sender + recipient + amount;
-        String signature =asymmetricCryptography.encryptText(text,privateKey);/*"{" + BlockChain.getInstance().getMessageId() + 1L +"}" + content,privateKey*///);
-        return new Transaction(/*BlockChain.getInstance().getMessageId() + 1L*/id , sender ,recipient, signature, publicKey,amount);
+        String text="{" + id +"}" + sender + recipient + amount;
+        String signature =asymmetricCryptography.encryptText(text,privateKey);
+        return new Transaction(id , sender ,recipient, signature, publicKey,amount);
 
     }
 
     public static Transaction generateMessage(String sender, int amount) throws Exception {
         if (!KeysInitializedFlag){
             InitializeKeys();}
-      //  GenerateKeys.generateKeyPair("C:\\Users\\x0r\\Desktop\\Keys\\");
-    //    AsymmetricCryptography ac = new AsymmetricCryptography();
-    //    PrivateKey privateKey = ac.getPrivate("C:\\Users\\x0r\\Desktop\\Keys\\privateKey");
-    //    publicKey = ac.getPublic("C:\\Users\\x0r\\Desktop\\Keys\\publicKey");
+
         String recipient = senders[new Random().nextInt(10)];
 
-        //String content = strings[1] + " " + strings[2] + " " + strings[3] + " " + strings[4] + " " + strings[5] + " " + strings[6];
+
         long id=BlockChain.getInstance().getTransactionId() + 1L;
-        String text="{" + id/*(BlockChain.getInstance().getMessageId() + 1L)*/ +"}" + sender + recipient + amount;
-        String signature =asymmetricCryptography.encryptText(text,privateKey);/*"{" + BlockChain.getInstance().getMessageId() + 1L +"}" + content,privateKey*///);
-        return new Transaction(/*BlockChain.getInstance().getMessageId() + 1L*/id , sender ,recipient, signature, publicKey,amount);
+        String text="{" + id +"}" + sender + recipient + amount;
+        String signature =asymmetricCryptography.encryptText(text,privateKey);
+        return new Transaction(id , sender ,recipient, signature, publicKey,amount);
 
     }
 
@@ -66,12 +60,9 @@ public  class MessageSender extends Thread {
     public static void generateMessages() throws Exception {
         if (!KeysInitializedFlag){
             InitializeKeys();}
-       // GenerateKeys.generateKeyPair("C:\\Users\\x0r\\Desktop\\Keys\\");
         int i = 4;
         while (i>0) {
-
             BlockChain.getInstance().addPendingTransaction(generateMessage());
-     //       sleep(3000);
            i--;
         }
     }
@@ -83,15 +74,6 @@ public  class MessageSender extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
-/*
-
-            int i = 12;
-            while (i > 0) {
-
-                BlockChain.getInstance().addPendingMessage("From : Transaction" + i);
-                i--;
-            }
-*/
 
 
     }
@@ -106,10 +88,9 @@ public  class MessageSender extends Thread {
                 file.mkdir();
                 file.setWritable(true);
                 file.setReadable(true);
-                //    System.out.println(path.toString());
-                GenerateKeys.generateKeyPair(path.toString()/*"C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\"*/);
-                privateKey = asymmetricCryptography.getPrivate(path.toString()+"\\privateKey");//"C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\privateKey");
-                publicKey = asymmetricCryptography.getPublic(path.toString()+"\\publicKey");//"C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\publicKey");
+                GenerateKeys.generateKeyPair(path.toString());
+                privateKey = asymmetricCryptography.getPrivate(path.toString()+"\\privateKey");
+                publicKey = asymmetricCryptography.getPublic(path.toString()+"\\publicKey");
                 KeysInitializedFlag=true;
             }
             else {

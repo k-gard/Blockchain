@@ -151,6 +151,10 @@ public class Main {
         }
         System.out.println("BlockChain Size:" + blockchain.getBlockchain().size());
 
+
+
+        System.out.println("First Method:" +BlockChain.getInstance().getBalance("miner # 4"));
+        System.out.println("Streams Method:" +BlockChain.getInstance().getBalance2("miner # 4"));
         try {
 
             FileOutputStream f = new FileOutputStream(new File("C:\\Users\\x0r\\Desktop\\blockchain.blc"));

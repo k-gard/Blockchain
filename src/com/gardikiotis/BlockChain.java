@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 class BlockChain implements Serializable {
     private static BlockChain single_instance = null;
@@ -31,7 +34,6 @@ class BlockChain implements Serializable {
 
         this.awardAmount = 100; //Default award amount
 
-
             InitializeKeys();
 
 
@@ -47,14 +49,9 @@ class BlockChain implements Serializable {
         Path path = Paths.get(scanner.nextLine());
             File file=new File(path.toString());
             if (!file.exists()) {
-                file.mkdir();
-                file.setWritable(true);
-                file.setReadable(true);
-                //    System.out.println(path.toString());
-                GenerateKeys.generateKeyPair(path.toString()/*"C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\"*/);
-                this.privateKey = ac.getPrivate(path.toString()+"\\privateKey");//"C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\privateKey");
-                this.publicKey = ac.getPublic(path.toString()+"\\publicKey");//"C:\\Users\\x0r\\Desktop\\Keys\\BlockChainKeys\\publicKey");
-
+                GenerateKeys.generateKeyPair(path.toString());
+                this.privateKey = ac.getPrivate(path.toString()+"\\privateKey");
+                this.publicKey = ac.getPublic(path.toString()+"\\publicKey");
             }
             else {
                 System.out.println("Path already exists");
@@ -97,6 +94,10 @@ class BlockChain implements Serializable {
         }
         return true;
     }
+
+
+
+
 
     public Boolean isValidBlock(Block b) {
         StringBuilder prefix = new StringBuilder("");
@@ -172,12 +173,9 @@ class BlockChain implements Serializable {
     public synchronized List<Transaction> getPendingTransactions() {
         List<Transaction> transactionList = new ArrayList<>();
         synchronized (Miner.class) {
-
-
             while (incomingTransactions.size() > 0) {
                 transactionList.add(this.incomingTransactions.remove());
             }
-
             return transactionList;
         }
     }
@@ -188,7 +186,6 @@ class BlockChain implements Serializable {
 
 
     public boolean isValidTransaction(Transaction m) {
-
 
         try {
             AsymmetricCryptography ac = new AsymmetricCryptography();
@@ -222,7 +219,7 @@ class BlockChain implements Serializable {
         System.out.println("BlockChain coin limit reached");
     }
 
-    public int getBalance(String s) throws Exception {
+/*    public int getBalance(String s) throws Exception {
 
         int totalAmount = 0;
         if (s.equals("BlockChain")) {
@@ -246,7 +243,30 @@ class BlockChain implements Serializable {
         }
 
         return totalAmount;
+    }*/
+
+    public long getBalance(String s) throws Exception{
+        if (s.equals("BlockChain")) {
+            return this.MaximumBlockChainCoins;
+        }
+        return Balance.apply(getAllVerifiedTransactions.apply(getBlockchain()),s);
     }
+
+    Function<List<Block>, List<Transaction>> getAllVerifiedTransactions =
+            (Function<List<Block>, List<Transaction>> & Serializable)
+                    x -> x.stream().flatMap(y -> y.getTransactions().stream()).collect(Collectors.toList());
+
+    BiFunction<List<Transaction>, String, Integer> inAmount =
+            (BiFunction<List<Transaction>, String, Integer> & Serializable)
+                    (x, y) -> x.stream().filter(z -> z.getRecipient().equals(y)).map(Transaction::getVcAmount).reduce(0, Integer::sum);
+
+    BiFunction<List<Transaction>, String, Integer> outAmount =
+            (BiFunction<List<Transaction>, String, Integer> & Serializable)
+                    (x, y) -> x.stream().filter(z -> z.getSender().equals(y)).map(Transaction::getVcAmount).reduce(0, Integer::sum);
+
+    BiFunction<List<Transaction>, String, Integer> Balance =
+            (BiFunction<List<Transaction>, String, Integer> & Serializable)
+                    (x, y) -> inAmount.apply(x, y) - outAmount.apply(x, y);
 
     public int getAwardAmount() {
         return awardAmount;
