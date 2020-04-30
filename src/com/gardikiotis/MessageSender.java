@@ -23,25 +23,19 @@ public  class MessageSender extends Thread {
    public static Transaction generateMessage() throws Exception {
        if (!KeysInitializedFlag){
            InitializeKeys();}
-
         String sender = senders[new Random().nextInt(10)];
         String recipient = recipients[new Random().nextInt(10)];
         int amount = new Random().nextInt(10);
-
         long id=BlockChain.getInstance().getTransactionId() + 1L;
         String text="{" + id +"}" + sender + recipient + amount;
         String signature =asymmetricCryptography.encryptText(text,privateKey);
         return new Transaction(id , sender ,recipient, signature, publicKey,amount);
-
     }
 
     public static Transaction generateMessage(String sender, int amount) throws Exception {
         if (!KeysInitializedFlag){
             InitializeKeys();}
-
         String recipient = senders[new Random().nextInt(10)];
-
-
         long id=BlockChain.getInstance().getTransactionId() + 1L;
         String text="{" + id +"}" + sender + recipient + amount;
         String signature =asymmetricCryptography.encryptText(text,privateKey);
@@ -49,13 +43,9 @@ public  class MessageSender extends Thread {
 
     }
 
-
-
-
     public static PublicKey getPublicKey() {
         return publicKey;
     }
-
 
     public static void generateMessages() throws Exception {
         if (!KeysInitializedFlag){
@@ -70,7 +60,11 @@ public  class MessageSender extends Thread {
     @Override
     public void run() {
         try {
+            InitializeKeys();
+            int i=100;
+            while (i > 0){
             generateMessages() ;
+            i--;}
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -85,9 +79,6 @@ public  class MessageSender extends Thread {
             Path path = Paths.get(scanner.nextLine());
             File file=new File(path.toString());
             if (!file.exists()) {
-                file.mkdir();
-                file.setWritable(true);
-                file.setReadable(true);
                 GenerateKeys.generateKeyPair(path.toString());
                 privateKey = asymmetricCryptography.getPrivate(path.toString()+"\\privateKey");
                 publicKey = asymmetricCryptography.getPublic(path.toString()+"\\publicKey");
@@ -103,8 +94,5 @@ public  class MessageSender extends Thread {
         }
     }
 
-    public static void cancel(){
 
-        isCanceled = true;
-    }
 }

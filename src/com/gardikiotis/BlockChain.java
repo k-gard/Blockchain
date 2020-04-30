@@ -31,14 +31,9 @@ class BlockChain implements Serializable {
 
 
     private BlockChain() throws Exception {
-
         this.awardAmount = 100; //Default award amount
-
-            InitializeKeys();
-
-
         this.hbs = new HashBlockString(0);
-
+        InitializeKeys();
     }
 
     private void InitializeKeys() throws NoSuchPaddingException, NoSuchAlgorithmException {
@@ -46,7 +41,7 @@ class BlockChain implements Serializable {
         try{
             System.out.println("Enter path for BlockChain encryption keys");
             Scanner scanner = new Scanner(System.in);
-        Path path = Paths.get(scanner.nextLine());
+            Path path = Paths.get(scanner.nextLine());
             File file=new File(path.toString());
             if (!file.exists()) {
                 GenerateKeys.generateKeyPair(path.toString());
@@ -94,9 +89,6 @@ class BlockChain implements Serializable {
         }
         return true;
     }
-
-
-
 
 
     public Boolean isValidBlock(Block b) {
@@ -171,13 +163,7 @@ class BlockChain implements Serializable {
     }
 
     public synchronized List<Transaction> getPendingTransactions() {
-        List<Transaction> transactionList = new ArrayList<>();
-        synchronized (Miner.class) {
-            while (incomingTransactions.size() > 0) {
-                transactionList.add(this.incomingTransactions.remove());
-            }
-            return transactionList;
-        }
+       return new ArrayList<>(incomingTransactions);
     }
 
     public long getTransactionId() {
@@ -212,38 +198,19 @@ class BlockChain implements Serializable {
             String sender = "BlockChain";
             String recipient = block.getCreatedBy();
             String text = "{" + id + "}" + sender + recipient + amount;
-            addPendingTransaction(new Transaction(id, sender, recipient, AsymmetricCryptography.generateSignature(text, this.privateKey), this.publicKey, amount));
+            addPendingTransaction(
+                    new Transaction(id,
+                            sender,
+                            recipient,
+                            AsymmetricCryptography.generateSignature(text, this.privateKey),
+                            this.publicKey,
+                            amount));
             this.MaximumBlockChainCoins -= 100;
             return;
         }
         System.out.println("BlockChain coin limit reached");
     }
 
-/*    public int getBalance(String s) throws Exception {
-
-        int totalAmount = 0;
-        if (s.equals("BlockChain")) {
-            return this.MaximumBlockChainCoins;
-        }
-
-        for (Block b : BlockChain.getInstance().getBlockchain()) {
-            for (Transaction t : b.getTransactions()) {
-
-                if (t.getRecipient().equals(s)) {
-                    totalAmount += t.getVcAmount();
-
-                }
-                if (t.getSender().equals(s)) {
-
-                    totalAmount -= t.getVcAmount();
-                }
-
-            }
-
-        }
-
-        return totalAmount;
-    }*/
 
     public long getBalance(String s) throws Exception{
         if (s.equals("BlockChain")) {
