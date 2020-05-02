@@ -36,6 +36,8 @@ public class Main {
 
     }
 
+
+
     private static void loadBlockChainPrompt() {
         Scanner s = new Scanner(System.in);
         System.out.println("Load existing BlockChain? (Y/N):");
